@@ -30,9 +30,9 @@ class ModelResult < ModelUtilities
       
   def sankey_table
     s = [] 
-    #(6..94).each do |row|
+    #(6..94).each do |row| 
     (6..68).each do |row|
-      s << [r("flows_c#{row}"),r("flows_n#{row}"),r("flows_d#{row}")]
+      s << [r("flows_c#{row}"),r("flows_m#{row}"),r("flows_d#{row}")] #changed n to m (2052 to 2047)
     end
     pathway[:sankey] = s
   end
@@ -40,18 +40,18 @@ class ModelResult < ModelUtilities
   def primary_energy_tables
     pathway[:ghg] = table 194, 206 #182, 192
     pathway[:final_energy_demand, ] = table 7, 18 #13, 18
-    pathway[:primary_energy_supply] = table 303, 319 #283, 296
-    pathway[:ghg][:percent_reduction_from_1990] = (r("intermediate_output_bh155") * 100).round
+    pathway[:primary_energy_supply] = table 308, 321 #283, 296 India - > N.01 to Total Primary supply
+    pathway[:ghg][:percent_reduction_from_1990] = (r("intermediate_output_bh155") * 100).round  #not done for India version
   end
   
   def electricity_tables
     e = {}
-    e[:demand] = table 342, 348 #322, 326
-    e[:supply] = table 107, 125 #96, 111
-    e[:emissions] = table 290, 293 #270, 273
-    e[:capacity] = table 131, 146 #118, 132
+    e[:demand] = table 347, 353 #322, 326
+    e[:supply] = table 107, 125 #96, 111  Note : We need to add in Row 126 -> Share of Renewables and incorporate that somewhere
+    e[:emissions] = table 295, 298 #270, 273  -> Emissions reclassified 
+    e[:capacity] = table 131, 146 #118, 132 -> GW instaled capacity
     e['automatically_built'] = r("intermediate_output_bh120")
-    e['peaking'] = r("intermediate_output_bh131")
+    e['peaking'] = r("intermediate_output_bh145")
     pathway['electricity'] = e
   end
 
@@ -73,8 +73,8 @@ class ModelResult < ModelUtilities
     low_start_row = 3
     point_start_row = 57
     high_start_row = 112
-    number_of_components = 49
-    #Assuming the last 3 rows are required. Else till == 45
+    number_of_components = 45
+    #Last three rows not required. 
     #Already synchronized/mapped
     
     # Normal cost components
@@ -149,25 +149,22 @@ class ModelResult < ModelUtilities
       ["Oil",41,42],
       #["Gas",44,46],
       ["Gas",43,45],
-      ["Bioenergy",35,36],
-      ["Uranium",23,23],
+      #["Bioenergy",35,36], -> not part of India version
+      #["Uranium",23,23],-> not part of India version
       #["Electricity",110,111],
       ["Electricity",123,125],
       #["Primary energy",297,296]
       ["Primary energy",322,321]
     ].each do |vector|
-      imported = r("intermediate_output_bh#{vector[1]}").to_s.to_f
+      imported = r("intermediate_output_bg#{vector[1]}").to_s.to_f
       imported = imported > 0 ? imported.round : 0
-      total = r("intermediate_output_bh#{vector[2]}").to_s.to_f
+      total = r("intermediate_output_bg#{vector[2]}").to_s.to_f
       proportion = total > 0 ? "#{((imported/total) * 100).round}%" : "0%"
       #i[vector[0]] = { '2050' => {quantity: imported, proportion: proportion} }
-      i[vector[0]] = { '2052' => {quantity: imported, proportion: proportion} }
-#     imported = r("intermediate_output_f#{vector[1]}").to_f
-      imported = r("intermediate_output_ay#{vector[1]}").to_s.to_f
-
+      i[vector[0]] = { '2047' => {quantity: imported, proportion: proportion} }
+      imported = r("intermediate_output_f#{vector[1]}").to_s.to_f
       imported = imported > 0 ? imported.round : 0
-#      total = r("intermediate_output_f#{vector[2]}").to_f
-      total = r("intermediate_output_ay#{vector[2]}").to_s.to_f
+      total = r("intermediate_output_f#{vector[2]}").to_s.to_f
       proportion = total > 0 ? "#{((imported/total) * 100).round}%" : "0%"
       i[vector[0]]['2007'] = { quantity: imported, proportion: proportion }
     end
@@ -177,12 +174,15 @@ class ModelResult < ModelUtilities
 
   def energy_diversity
     d = {}
-    total_2007 = r("intermediate_output_f296").to_f
-    total_2050 = r("intermediate_output_bh296").to_f
-    (283..295).each do |row|
+    #total_2007 = r("intermediate_output_f296").to_f
+    total_2007 = r("intermediate_output_ay321").to_f
+    #total_2050 = r("intermediate_output_bh296").to_f
+    total_2047 = r("intermediate_output_bg321").to_f
+    #(283..295).each do |row|
+    (308..320).each do |row|
       d[r("intermediate_output_d#{row}")] = { 
-        '2007' => "#{((r("intermediate_output_f#{row}").to_f / total_2007)*100).round}%",
-        '2050' => "#{((r("intermediate_output_bh#{row}").to_f / total_2050)*100).round}%"
+        '2007' => "#{((r("intermediate_output_ay#{row}").to_f / total_2007)*100).round}%",
+        '2047' => "#{((r("intermediate_output_bg#{row}").to_f / total_2047)*100).round}%"
       }
     end
     pathway['diversity'] = d
