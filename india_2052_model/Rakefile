@@ -20,7 +20,7 @@ file 'ext/model.c' do
     "Intermediate output" => :all, 
     "CostPerCapita" => :all, 
     "Land Use" => :all, 
-    "Flows" => :all, 
+    "flows" => :all, 
     "AQ Outputs" => :all, 
   }
   
